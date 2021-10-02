@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
@@ -10,12 +10,27 @@ export function Home() {
 
   function handleAddTask(newTaskTitle: string) {
     //TODO - add new task
-    const data = {
-      id: (new Date().getTime()),
-      title: newTaskTitle,
-      done: false 
+    const newTaskTitle1 = tasks.find(task => 
+      task.title === newTaskTitle
+    )
+
+    if (newTaskTitle1) {
+      Alert.alert(
+        'Task já cadastrada',
+        'Você não pode cadastrar uma task com o mesmo nome',
+        [{
+        text: 'Ok',
+        onPress: () => console.log('OK Pressed')
+      }]) 
+    } else {
+      const data = {
+        id: (new Date().getTime()),
+        title: newTaskTitle,
+        done: false 
+      }
+      setTasks(oldState => [...oldState, data])  
     }
-    setTasks(oldState => [...oldState, data])
+
   }
 
   function handleToggleTaskDone(id: number) {
@@ -34,11 +49,37 @@ export function Home() {
 
   function handleRemoveTask(id: number) {
     //TODO - remove task from state
-    setTasks(oldState => oldState.filter(
-      tasks => tasks.id !== id
-  ))
+    Alert.alert(
+      'Remover item',
+      'Tem certeza que você deseja remover esse item?',
+      [
+        {
+          text: 'Não',
+          onPress: () => console.log('Clicou não')
+        },
+        {
+          text: 'Sim',
+          onPress: () => {
+            console.log('Clicou sim')
+            setTasks(oldState => oldState.filter(
+              tasks => tasks.id !== id))
+          }
+        },
+      ],
+      {cancelable: false},
+      //clicking out side of alert will not cancel
+    )
   }
 
+  function handleEditTask(taskId: number, taskNewTitle: string) {
+    const updatedTasks = tasks.map(task => { 
+      if (task.id === taskId) {
+         task.title = taskNewTitle }
+      return task
+    })
+    setTasks(updatedTasks)
+  }
+  
   return (
     <View style={styles.container}>
       <Header tasksCounter={tasks.length} />
@@ -49,6 +90,7 @@ export function Home() {
         tasks={tasks} 
         toggleTaskDone={handleToggleTaskDone}
         removeTask={handleRemoveTask} 
+        editTask={handleEditTask}
       />
     </View>
   )
